@@ -33,6 +33,22 @@ function JavaEditor() {
     };
   }, []);
 
+   async function fetchResponse(code) {
+     const response = await fetch('/compile', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json'
+       },
+       body: JSON.stringify({ code })
+     });
+
+     if (!response.ok) {
+       throw new Error(response.statusText);
+     }
+
+     return response.json();
+   }
+
   async function compileCode() {
     if (!editorInstanceRef.current || !monacoRef.current) return;
 
@@ -41,15 +57,7 @@ function JavaEditor() {
     const model = editorInstanceRef.current.getModel();
 
     try {
-      const response = await fetch('/compile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ code: currentCode })
-      });
-
-      const errors = await response.json();
+      const errors = await fetchResponse(currentCode);
 
       if (errors.length === 0) {
         alert("Compilation successful!");

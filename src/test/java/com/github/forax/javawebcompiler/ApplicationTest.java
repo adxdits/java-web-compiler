@@ -2,6 +2,9 @@ package com.github.forax.javawebcompiler;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public final class ApplicationTest {
@@ -46,15 +49,15 @@ public final class ApplicationTest {
         }
       """;
       var loader = new MemoryClassLoader();
-      Compiler.compileInMemory("Main", code, loader);
-      var output = Runner.runFromMemory("Main", loader);
-      assertEquals("Hello\n", output);
-    }
+      var diagnostics = Compiler.compileInMemory("Main", code, loader);
+      var result = Runner.runFromMemory("Main", loader, diagnostics);
+      assertEquals(new Runner.RunResult("Hello\n", List.of()), result);
+  }
 
     @Test
     public void runWithNoCompiledCode() {
       var loader = new MemoryClassLoader();
-      assertThrows(ClassNotFoundException.class, () -> Runner.runFromMemory("Main", loader));
+      assertThrows(ClassNotFoundException.class, () -> Runner.runFromMemory("Main", loader, List.of()));
     }
 
     @Test
@@ -68,9 +71,9 @@ public final class ApplicationTest {
         }
       """;
       var loader = new MemoryClassLoader();
-      Compiler.compileInMemory("Main", code, loader);
-      var output = Runner.runFromMemory("Main", loader);
-      assertEquals("line1\nline2\n", output);
+      var diagnostics = Compiler.compileInMemory("Main", code, loader);
+      var result = Runner.runFromMemory("Main", loader, diagnostics);
+      assertEquals(new Runner.RunResult("line1\nline2\n", List.of()), result);
     }
 
     @Test
@@ -81,8 +84,62 @@ public final class ApplicationTest {
         }
       """;
       var loader = new MemoryClassLoader();
-      Compiler.compileInMemory("Main", code, loader);
-      var output = Runner.runFromMemory("Main", loader);
-      assertEquals("", output);
+      var diagnostics = Compiler.compileInMemory("Main", code, loader);
+      var result = Runner.runFromMemory("Main", loader, diagnostics);
+      assertEquals(new Runner.RunResult("", List.of()), result);
     }
+
+  @Test
+  public void compileWithDifferentClassName() {
+    var code = """
+      public class Test {
+        public static void main(String[] args) {
+        }
+      }
+      """;
+    var loader = new MemoryClassLoader();
+    var diagnostics = Compiler.compileInMemory("Test", code,loader);
+
+    assertTrue(diagnostics.isEmpty());
+  }
+
+  @Test
+  public void compileWithWrongClassNameShouldFail() {
+    var code = """
+      public class Test {
+      }
+      """;
+
+    var loader = new MemoryClassLoader();
+    var diagnostics = Compiler.compileInMemory("Main", code,loader);
+
+    assertFalse(diagnostics.isEmpty());
+  }
+
+  @Test
+  public void compileClassWithoutMainShouldStillCompile() {
+    var code = """
+        public class Test {
+            int x = 10;
+        }
+        """;
+
+    var loader = new MemoryClassLoader();
+    var diagnostics = Compiler.compileInMemory("Test", code,loader);
+
+    assertTrue(diagnostics.isEmpty());
+  }
+  @Test
+  public void compileWrongCodeWithMultipleErrors(){
+    var code = """
+        public class Main {
+            System.out.println("Hello");
+            int a = "";
+        }
+        """;
+    var loader = new MemoryClassLoader();
+    var diagnostics = Compiler.compileInMemory("Main", code,loader);
+    assertFalse(diagnostics.isEmpty());
+    assertEquals(2, diagnostics.size());
+  }
 }

@@ -51,17 +51,50 @@ function JavaEditor() {
      return response.json();
    }
 
- async function runCode() {
-   try {
-     const code = editorInstanceRef.current.getValue();
-     const response = await fetch('/run', { method: 'POST' });
-     if (!response.ok) throw new Error(response.statusText);
-     const data = await response.json();
-     setOutput(data.output);
-   } catch (err) {
-     console.error('Run failed:', err);
-   }
- }
+  async function fetchRun(currentCode) {
+   const response = await fetch('/run', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code: currentCode })
+    });
+
+    if (!response.ok) throw new Error(response.statusText);
+    return response.json();
+  }
+
+  async function runCode() {
+    if (!editorInstanceRef.current || !monacoRef.current) return;
+
+    const currentCode = editorInstanceRef.current.getValue();
+    const monaco = monacoRef.current;
+    const model = editorInstanceRef.current.getModel();
+
+    try {
+      const data = await fetchRun(currentCode);
+
+      if (data.errors.length === 0) {
+        monaco.editor.setModelMarkers(model, 'java-compiler', []);
+      }
+
+      // Map Java diagnostics to Monaco markers
+      const markers = data.errors.map(err => ({
+        severity: monaco.MarkerSeverity.Error,
+        startLineNumber: err.line,
+        startColumn: err.column,
+        endLineNumber: err.line,
+        endColumn: err.column + 1, // Highlight the character token
+        message: err.message
+      }));
+
+      // Apply red squiggles
+      monaco.editor.setModelMarkers(model, 'java-compiler', markers);
+      setOutput(data.output);
+    } catch (err) {
+      console.error('Compilation fetch failed', err);
+    }
+  }
 
   async function compileCode() {
     if (!editorInstanceRef.current || !monacoRef.current) return;
@@ -82,11 +115,11 @@ function JavaEditor() {
         return;
       }
 
-      setOutput(errors.map(e => `✕ Ligne ${e.line}, col ${e.column} — ${e.message}`).join('\n'));
+      setOutput(errors.map(e => `[${e.kind}] Ligne ${e.line}, col ${e.column} — ${e.message}`).join('\n'));
 
       // Map Java diagnostics to Monaco markers
       const markers = errors.map(err => ({
-        severity: monaco.MarkerSeverity.Error,
+        severity: err.kind === 'ERROR' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
         startLineNumber: err.line,
         startColumn: err.column,
         endLineNumber: err.line,
@@ -115,29 +148,23 @@ function JavaEditor() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ padding: '10px', backgroundColor: '#202124', borderBottom: '1px solid #333', display: 'flex', gap: '10px' }}>
-        <button
-          onClick={compileCode}
-          style={{ padding: '8px 16px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>
+    <div className="app-container">
+      <div className="toolbar">
+        <button onClick={compileCode} className="btn-compile">
           Compile Code
         </button>
-        <button
-          onClick={runCode}
-          style={{ padding: '8px 16px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#FF9800', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={runCode} className="btn-run">
           Run
         </button>
-        <button
-          onClick={downloadCode}
-          style={{ padding: '8px 16px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={downloadCode} className="btn-download">
           Download
         </button>
       </div>
       {/* The div where Monaco will inject itself */}
-      <div ref={editorDivRef} style={{ flexGrow: 1 }} />
-      <div style={{ height: '150px', backgroundColor: '#1e1e1e', borderTop: '2px solid #4CAF50', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '4px 10px', backgroundColor: '#2d2d2d', color: '#888', fontSize: '12px' }}>Output</div>
-        <pre style={{ margin: 0, padding: '10px', color: '#d4d4d4', fontFamily: 'monospace', overflowY: 'auto', flexGrow: 1 }}>
+      <div ref={editorDivRef} className="editor-container" />
+      <div className="output-panel">
+        <div className="output-header">Output</div>
+        <pre className="output-content">
           {output ?? 'Run your code to see output here...'}
         </pre>
       </div>

@@ -12,7 +12,6 @@ public class Application {
   }
 
   private record CompileResponse(String className, List<Compiler.Diagnostic> diagnostics) {}
-  private record RunResponse(String output) {}
 
   private static final Pattern CLASSNAME_PATTERN = Pattern.compile("class\\s+(\\w+)");
 
@@ -54,17 +53,14 @@ public class Application {
         var className = classNameExtractor(sourceCode);
         var newLoader = new MemoryClassLoader();
         var diagnostics = Compiler.compileInMemory(className, sourceCode, newLoader);
-        if (!diagnostics.isEmpty()) {
-          throw new Error("TODO Marko");
-        }
-        var output = Runner.runFromMemory(className, newLoader);
-        res.send(objectMapper.writeValueAsString(new RunResponse(output)));
+        var runResult = Runner.runFromMemory(className, newLoader, diagnostics);
+        res.send(objectMapper.writeValueAsString(runResult));
       } catch (Exception e) {
         res.status(500).json("""
           {"error": "Internal Server Error"}
         """);
-        }
-      });
+      }
+    });
     app.listen(8080);
     System.out.println("Web site on http://localhost:8080/index.html");
   }

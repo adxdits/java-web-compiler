@@ -147,29 +147,23 @@ function JavaEditor() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ padding: '10px', backgroundColor: '#202124', borderBottom: '1px solid #333', display: 'flex', gap: '10px' }}>
-        <button
-          onClick={compileCode}
-          style={{ padding: '8px 16px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>
+    <div className="app-container">
+      <div className="toolbar">
+        <button onClick={compileCode} className="btn-compile">
           Compile Code
         </button>
-        <button
-          onClick={runCode}
-          style={{ padding: '8px 16px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#FF9800', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={runCode} className="btn-run">
           Run
         </button>
-        <button
-          onClick={downloadCode}
-          style={{ padding: '8px 16px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={downloadCode} className="btn-download">
           Download
         </button>
       </div>
       {/* The div where Monaco will inject itself */}
-      <div ref={editorDivRef} style={{ flexGrow: 1 }} />
-      <div style={{ height: '150px', backgroundColor: '#1e1e1e', borderTop: '2px solid #4CAF50', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '4px 10px', backgroundColor: '#2d2d2d', color: '#888', fontSize: '12px' }}>Output</div>
-        <pre style={{ margin: 0, padding: '10px', color: '#d4d4d4', fontFamily: 'monospace', overflowY: 'auto', flexGrow: 1 }}>
+      <div ref={editorDivRef} className="editor-container" />
+      <div className="output-panel">
+        <div className="output-header">Output</div>
+        <pre className="output-content">
           {output ?? 'Run your code to see output here...'}
         </pre>
       </div>

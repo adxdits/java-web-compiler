@@ -72,7 +72,8 @@ function JavaEditor() {
 
     try {
       const data = await fetchResponse(currentCode);
-      const errors = data.diagnostics;
+      const errors = data.diagnostics || [];
+      console.log(data);
       setClassName(data.className);
 
       if (errors.length === 0) {

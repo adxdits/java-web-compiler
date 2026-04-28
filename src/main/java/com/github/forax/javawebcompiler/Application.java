@@ -18,14 +18,13 @@ public class Application {
     // Serve the static frontend files from "public"
     app.use(JExpress.staticFiles(Path.of("public")));
     var objectMapper = new ObjectMapper();
-    var loaderHolder = new MemoryClassLoader[]{ null };
 
     app.post("/compile", (req, res) -> {
       try {
         var compileRequest = objectMapper.readValue(req.bodyText(), CompileRequest.class);
         var newLoader = new MemoryClassLoader();
         var diagnostics = Compiler.compileInMemory("Main", compileRequest.code(), newLoader);
-        loaderHolder[0] = newLoader;
+
         res.send(objectMapper.writeValueAsString(diagnostics));
       } catch (Exception e) {
         res.status(500).json("""
@@ -34,15 +33,15 @@ public class Application {
       }
     });
 
-    app.post("/run", (_, res) -> {
+    app.post("/run", (req, res) -> {
       try {
-        if (loaderHolder[0] == null) {
-          res.status(400).json("""
-            {"error": "No compiled code, please compile first"}
-          """);
-          return;
+        var compileRequest = objectMapper.readValue(req.bodyText(), CompileRequest.class);
+        var newLoader = new MemoryClassLoader();
+        var diagnostics = Compiler.compileInMemory("Main", compileRequest.code(), newLoader);
+        if (!diagnostics.isEmpty()) {
+          throw new Error("TODO Marko");
         }
-        var output = Runner.runFromMemory("Main", loaderHolder[0]);
+        var output = Runner.runFromMemory("Main", newLoader);
         res.send(objectMapper.writeValueAsString(Map.of("output", output)));
       } catch (Exception e) {
         res.status(500).json("""

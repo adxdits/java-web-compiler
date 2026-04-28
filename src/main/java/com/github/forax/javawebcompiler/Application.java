@@ -1,15 +1,15 @@
 package com.github.forax.javawebcompiler;
 
-import javax.tools.ToolProvider;
-
-import tools.jackson.databind.ObjectMapper;
-
 import module java.base;
 import module java.compiler;
 
+import tools.jackson.databind.ObjectMapper;
+
+import javax.tools.ToolProvider;
+
 public class Application {
 
-  record Diagnostic(long line, long column, String message) {}
+  private record Diagnostic(long line, long column, String message) {} 
 
   static void main(String[] args) {
     var app = JExpress.express();

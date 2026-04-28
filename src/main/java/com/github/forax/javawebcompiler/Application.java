@@ -38,7 +38,8 @@ public class Application {
     System.out.println("Web site on http://localhost:8080/index.html");
   }
 
-  private static List<Diagnostic> compileInMemory(String className, String sourceCode) {
+  //package visibility needed so we deleted the private status
+  static List<Diagnostic> compileInMemory(String className, String sourceCode) {
     var compiler = ToolProvider.getSystemJavaCompiler();
     var diagnostics = new DiagnosticCollector<>();
 

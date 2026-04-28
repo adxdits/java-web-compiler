@@ -5,6 +5,7 @@ function JavaEditor() {
   const editorInstanceRef = useRef(null);
   const monacoRef = useRef(null);
   const [output, setOutput] = useState(null);
+  const [className, setClassName] = useState('Main');
 
   const defaultCode = 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello World");\n  }\n}';
 
@@ -70,7 +71,9 @@ function JavaEditor() {
     const model = editorInstanceRef.current.getModel();
 
     try {
-      const errors = await fetchResponse(currentCode);
+      const result = await fetchResponse(currentCode);
+      setClassName(result.className);
+      const errors = result.diagnostics;
 
       if (errors.length === 0) {
         alert("Compilation successful!");
@@ -96,14 +99,29 @@ function JavaEditor() {
     }
   }
 
-  function downloadCode() {
+  async function downloadCode() {
     if (!editorInstanceRef.current){ return; } 
     const code = editorInstanceRef.current.getValue();
+    let name = className;
+    try {
+      const response = await fetch('/className', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        name = data.className;
+        setClassName(name);
+      }
+    } catch (err) {
+      // fall through with current className
+    }
     const blob = new Blob([code], { type: 'text/x-java-source' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'Main.java';
+    a.download = `${name}.java`;
     a.click();
     URL.revokeObjectURL(url);
   }

@@ -1,9 +1,8 @@
 package com.github.forax.javawebcompiler;
 
-import module java.base;
-import module java.compiler;
-
 import tools.jackson.databind.ObjectMapper;
+
+import module java.base;
 
 public class Application {
   private record CompileRequest(String code){
@@ -36,7 +35,7 @@ public class Application {
         var newLoader = new MemoryClassLoader();
         var diagnostics = Compiler.compileInMemory(className, sourceCode, newLoader);
 
-        res.send(objectMapper.writeValueAsString(diagnostics));
+        res.send(objectMapper.writeValueAsString(Map.of("className", className, "diagnostics", diagnostics)));
       } catch (Exception e) {
         res.status(500).json("""
             {"error": "Internal Server Error"}

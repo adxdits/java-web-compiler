@@ -5,29 +5,31 @@ import module jdk.httpserver;
 
 /**
  * An express.js-like application library, requires Java 25
+ *
  * <pre>
  *   Run the application with     : java JExpress.java
  * </pre>
  */
 public final class JExpress {
-  /**
-   * A HTTP request
-   */
+  /** A HTTP request */
   public sealed interface Request {
     /**
      * The HTTP method of the request.
+     *
      * @return the HTTP method.
      */
     String method();
 
     /**
      * The HTTP path of the request.
+     *
      * @return the HTTP path.
      */
     String path();
 
     /**
      * The value of an HTTP header or null.
+     *
      * @param header the header name.
      * @return value of an HTTP header or null.
      */
@@ -35,6 +37,7 @@ public final class JExpress {
 
     /**
      * Get the value of a route parameter
+     *
      * @param name name of the parameter
      * @return the value of the parameter or ""
      */
@@ -42,6 +45,7 @@ public final class JExpress {
 
     /**
      * Returns the body of the request as a JSON array.
+     *
      * @return the body of the request as a JSON array.
      * @throws IOException if an I/O error occurs.
      */
@@ -49,6 +53,7 @@ public final class JExpress {
 
     /**
      * Returns the body of the request as a JSON object.
+     *
      * @return the body of the request as a JSON object.
      * @throws IOException if an I/O error occurs.
      */
@@ -56,24 +61,25 @@ public final class JExpress {
 
     /**
      * Returns the body of the request as an InputStream.
+     *
      * @return the body of the request as an InputStream.
      */
     InputStream bodyStream();
 
     /**
      * Returns the body of the request as a String.
+     *
      * @return the body of the request as a String.
      * @throws IOException if an I/O error occurs.
      */
     String bodyText() throws IOException;
   }
 
-  /**
-   * A HTTP response
-   */
+  /** A HTTP response */
   public sealed interface Response {
     /**
      * Set the HTTP status of the response
+     *
      * @param status the HTTP status (200, 404, etc)
      * @return the current response.
      */
@@ -81,6 +87,7 @@ public final class JExpress {
 
     /**
      * Appends the specified value to the HTTP response header field.
+     *
      * @param field a header field name
      * @param value the value of the header field
      * @return the current response.
@@ -89,6 +96,7 @@ public final class JExpress {
 
     /**
      * Sets the response’s HTTP header field to value
+     *
      * @param field a header field name
      * @param value the value of the header field
      * @return the current response.
@@ -97,6 +105,7 @@ public final class JExpress {
 
     /**
      * Sets the Content-Type HTTP header to the MIME type.
+     *
      * @param type the MIME type.
      * @return the current response.
      */
@@ -104,6 +113,7 @@ public final class JExpress {
 
     /**
      * Sets the Content-Type HTTP header and the charset encoding.
+     *
      * @param type the MIME type.
      * @param charset the charset encoding
      * @return the current response.
@@ -114,6 +124,7 @@ public final class JExpress {
 
     /**
      * Sets the Content-Type HTTP header and the charset encoding.
+     *
      * @param type the MIME type.
      * @param charset the charset encoding
      * @return the current response.
@@ -124,6 +135,7 @@ public final class JExpress {
 
     /**
      * Sends a JSON response with the correct 'Content-Type'.
+     *
      * @param object an object, can be an iterable, a stream, a record or a map
      * @throws IOException if an I/O error occurs.
      */
@@ -131,29 +143,29 @@ public final class JExpress {
 
     /**
      * Sends a JSON response with the correct 'Content-Type'.
+     *
      * @param json a JSON string
      * @throws IOException if an I/O error occurs.
      */
     void json(String json) throws IOException;
 
     /**
-     * Send a Text response.
-     * If the status is not defined 200 will be used.
-     * If the Content-Type is not defined, "text/html" will be used.
+     * Send a Text response. If the status is not defined 200 will be used. If the Content-Type is
+     * not defined, "text/html" will be used.
+     *
      * @param body the text of the response
      * @throws IOException if an I/O error occurs.
      */
     void send(String body) throws IOException;
 
     /**
-     * Send a file as response.
-     * The status is set to 200 if the file is found or 404 if not found.
+     * Send a file as response. The status is set to 200 if the file is found or 404 if not found.
+     *
      * @param path the path of the file;
      * @throws IOException if an I/O error occurs.
      */
     void sendFile(Path path) throws IOException;
   }
-
 
   /**
    * A generic handler called to process an HTTP request to create an HTTP response.
@@ -163,9 +175,7 @@ public final class JExpress {
    */
   @FunctionalInterface
   public interface Handler {
-    /**
-     * Represent the next handler in the handler chain.
-     */
+    /** Represent the next handler in the handler chain. */
     @FunctionalInterface
     interface Chain {
       /**
@@ -178,6 +188,7 @@ public final class JExpress {
 
     /**
      * Called to process an HTTP request to create a HTTP response.
+     *
      * @param request an HTTP request
      * @param response an HTTP response
      * @param chain represents the next handler in the handler chain
@@ -187,14 +198,15 @@ public final class JExpress {
   }
 
   /**
-   * A callback called to process an HTTP request to create an HTTP response.
-   * {@link Handler} is a more generic interface which unlike {@link Callback} allows to
-   * delegate part of the processing to another handler.
+   * A callback called to process an HTTP request to create an HTTP response. {@link Handler} is a
+   * more generic interface which unlike {@link Callback} allows to delegate part of the processing
+   * to another handler.
    */
   @FunctionalInterface
   public interface Callback {
     /**
      * Called to process an HTTP request to create a HTTP response.
+     *
      * @param request an HTTP request
      * @param response an HTTP response
      * @throws IOException if an I/O occurs
@@ -202,13 +214,9 @@ public final class JExpress {
     void accept(Request request, Response response) throws IOException;
   }
 
-  /**
-   * A server instance
-   */
+  /** A server instance */
   public interface Server extends AutoCloseable {
-    /**
-     * Close the server
-     */
+    /** Close the server */
     void close();
   }
 
@@ -261,8 +269,8 @@ public final class JExpress {
     @Override
     public String bodyText() throws IOException {
       try (var in = bodyStream();
-           var reader = new InputStreamReader(in, StandardCharsets.UTF_8);
-           var buffered = new BufferedReader(reader)) {
+          var reader = new InputStreamReader(in, StandardCharsets.UTF_8);
+          var buffered = new BufferedReader(reader)) {
         return buffered.lines().collect(Collectors.joining("\n"));
       }
     }
@@ -331,7 +339,7 @@ public final class JExpress {
           if (contentType == null) {
             contentType = "application/octet-stream";
           }
-          //System.err.println("inferred content type " + contentType);
+          // System.err.println("inferred content type " + contentType);
           if (contentType.startsWith("text/")) {
             type(contentType, "utf-8");
           } else {
@@ -341,7 +349,13 @@ public final class JExpress {
 
         var contentLength = Files.size(path);
         exchange.sendResponseHeaders(200, contentLength);
-        System.err.println("  send file " + 200 + " content-type " + contentType + " content-length " + contentLength);
+        System.err.println(
+            "  send file "
+                + 200
+                + " content-type "
+                + contentType
+                + " content-length "
+                + contentLength);
 
         try (var output = exchange.getResponseBody()) {
           var buffer = new byte[8192];
@@ -353,7 +367,7 @@ public final class JExpress {
         }
       } catch (FileNotFoundException e) {
         var message = "Not Found " + e.getMessage();
-        //System.err.println(message);
+        // System.err.println(message);
         status(404).send("<html><h2>" + message + "</h2></html>");
       }
     }
@@ -362,30 +376,38 @@ public final class JExpress {
   private static Function<String[], Optional<Map<String, String>>> matcher(String uri) {
     var parts = uri.split("/");
     var length = parts.length;
-    var predicate =  (Predicate<String[]>) components -> components.length >= length;
-    var consumer = (BiConsumer<String[], Map<String,String>>) (_, _) -> { /* empty */ };
-    for(var i = 0; i < length; i++) {
+    var predicate = (Predicate<String[]>) components -> components.length >= length;
+    var consumer =
+        (BiConsumer<String[], Map<String, String>>)
+            (_, _) -> {
+              /* empty */
+            };
+    for (var i = 0; i < length; i++) {
       var index = i;
       var part = parts[i];
       if (part.startsWith(":")) {
         var key = part.substring(1);
         var c = consumer;
-        consumer = (components, map) -> { c.accept(components, map); map.put(key, components[index]); };
+        consumer =
+            (components, map) -> {
+              c.accept(components, map);
+              map.put(key, components[index]);
+            };
       } else {
         predicate = predicate.and(components -> part.equals(components[index]));
       }
     }
 
-    var p =  predicate;
+    var p = predicate;
     var c = consumer;
     return components -> {
       if (!p.test(components)) {
-        //System.err.println("do not match " + Arrays.toString(components));
+        // System.err.println("do not match " + Arrays.toString(components));
         return Optional.empty();
       }
-      var map = new HashMap<String,String>();
+      var map = new HashMap<String, String>();
       c.accept(components, map);
-      //System.err.println("match " + Arrays.toString(components) + " " + map);
+      // System.err.println("match " + Arrays.toString(components) + " " + map);
       return Optional.of(map);
     };
   }
@@ -396,6 +418,7 @@ public final class JExpress {
 
   /**
    * Creates an Express like application.
+   *
    * @return a new Express like application.
    */
   public static JExpress express() {
@@ -422,8 +445,7 @@ public final class JExpress {
       RIGHT_BRACKET("(\\])"),
       COLON("(\\:)"),
       COMMA("(\\,)"),
-      BLANK("([ \t]+)")
-      ;
+      BLANK("([ \t]+)");
 
       private final String regex;
 
@@ -447,18 +469,27 @@ public final class JExpress {
       }
 
       public IllegalStateException error(Kind... expectedKinds) {
-        return new IllegalStateException("expect " + Arrays.stream(expectedKinds)
-            .map(Kind::name).collect(Collectors.joining(", ")) + " but recognized " + kind + " at " + location);
+        return new IllegalStateException(
+            "expect "
+                + Arrays.stream(expectedKinds).map(Kind::name).collect(Collectors.joining(", "))
+                + " but recognized "
+                + kind
+                + " at "
+                + location);
       }
     }
 
     private record Lexer(Matcher matcher) {
       private Token next() {
-        for(;;) {
+        for (; ; ) {
           if (!matcher.find()) {
             throw new IllegalStateException("no token recognized");
           }
-          var index = IntStream.rangeClosed(1, matcher.groupCount()).filter(i -> matcher.group(i) != null).findFirst().orElseThrow();
+          var index =
+              IntStream.rangeClosed(1, matcher.groupCount())
+                  .filter(i -> matcher.group(i) != null)
+                  .findFirst()
+                  .orElseThrow();
           var kind = Kind.VALUES[index - 1];
           if (kind != Kind.BLANK) {
             return new Token(kind, matcher.group(index), matcher.start(index));
@@ -467,8 +498,9 @@ public final class JExpress {
       }
     }
 
-    private static final Pattern PATTERN = Pattern.compile(Arrays.stream(Kind.VALUES)
-        .map(k -> k.regex).collect(Collectors.joining("|")));
+    private static final Pattern PATTERN =
+        Pattern.compile(
+            Arrays.stream(Kind.VALUES).map(k -> k.regex).collect(Collectors.joining("|")));
 
     /**
      * Parse a JSON text.
@@ -480,14 +512,14 @@ public final class JExpress {
       var lexer = new Lexer(PATTERN.matcher(input));
       try {
         return parse(lexer);
-      } catch(IllegalStateException e) {
+      } catch (IllegalStateException e) {
         throw new IllegalStateException(e.getMessage() + "\n while parsing " + input, e);
       }
     }
 
     private static Object parse(Lexer lexer) {
       var token = lexer.next();
-      return switch(token.kind) {
+      return switch (token.kind) {
         case LEFT_CURLY -> {
           var object = new HashMap<String, Object>();
           parseObject(lexer, object);
@@ -502,7 +534,8 @@ public final class JExpress {
       };
     }
 
-    private static void parseObjectValue(Token token, Lexer lexer, Map<String, Object> jsonObject, String key) {
+    private static void parseObjectValue(
+        Token token, Lexer lexer, Map<String, Object> jsonObject, String key) {
       switch (token.kind) {
         case NULL -> jsonObject.put(key, null);
         case FALSE -> jsonObject.put(key, false);
@@ -520,7 +553,16 @@ public final class JExpress {
           parseArray(lexer, list);
           jsonObject.put(key, list);
         }
-        default -> throw token.error(Kind.NULL, Kind.FALSE, Kind.TRUE, Kind.INTEGER, Kind.DOUBLE, Kind.STRING, Kind.LEFT_BRACKET, Kind.RIGHT_CURLY);
+        default ->
+            throw token.error(
+                Kind.NULL,
+                Kind.FALSE,
+                Kind.TRUE,
+                Kind.INTEGER,
+                Kind.DOUBLE,
+                Kind.STRING,
+                Kind.LEFT_BRACKET,
+                Kind.RIGHT_CURLY);
       }
     }
 
@@ -542,7 +584,16 @@ public final class JExpress {
           parseArray(lexer, list);
           jsonArray.add(list);
         }
-        default -> throw token.error(Kind.NULL, Kind.FALSE, Kind.TRUE, Kind.INTEGER, Kind.DOUBLE, Kind.STRING, Kind.LEFT_BRACKET, Kind.RIGHT_CURLY);
+        default ->
+            throw token.error(
+                Kind.NULL,
+                Kind.FALSE,
+                Kind.TRUE,
+                Kind.INTEGER,
+                Kind.DOUBLE,
+                Kind.STRING,
+                Kind.LEFT_BRACKET,
+                Kind.RIGHT_CURLY);
       }
     }
 
@@ -551,7 +602,7 @@ public final class JExpress {
       if (token.is(Kind.RIGHT_CURLY)) {
         return;
       }
-      for(;;) {
+      for (; ; ) {
         var key = token.expect(Kind.STRING);
         lexer.next().expect(Kind.COLON);
         token = lexer.next();
@@ -570,7 +621,7 @@ public final class JExpress {
       if (token.is(Kind.RIGHT_BRACKET)) {
         return;
       }
-      for(;;) {
+      for (; ; ) {
         parseArrayValue(token, lexer, jsonArray);
         token = lexer.next();
         if (token.is(Kind.RIGHT_BRACKET)) {
@@ -588,12 +639,14 @@ public final class JExpress {
         return toJSONArray(collection.stream());
       }
       if (o instanceof Iterable<?> iterable) {
-        return toJSONArray(StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterable.iterator(), 0), false));
+        return toJSONArray(
+            StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterable.iterator(), 0), false));
       }
       if (o instanceof Stream<?> stream) {
         return toJSONArray(stream);
       }
-      if (o instanceof Map<?,?> map) {
+      if (o instanceof Map<?, ?> map) {
         return toJSONObject(map);
       }
       if (o instanceof Record record) {
@@ -601,6 +654,7 @@ public final class JExpress {
       }
       throw new IllegalStateException("unknown json object " + o);
     }
+
     private static String toJSONItem(Object item) {
       return switch (item) {
         case null -> "null";
@@ -609,14 +663,17 @@ public final class JExpress {
         default -> toJSON(item);
       };
     }
+
     private static String toJSONArray(Stream<?> stream) {
       return stream.map(JSONPrettyPrinter::toJSONItem).collect(Collectors.joining(", ", "[", "]"));
     }
-    private static String toJSONObject(Map<?,?> map) {
+
+    private static String toJSONObject(Map<?, ?> map) {
       return map.entrySet().stream()
           .map(e -> "\"" + e.getKey() + "\": " + toJSONItem(e.getValue()))
           .collect(Collectors.joining(", ", "{", "}"));
     }
+
     private static Object accessor(Method accessor, Record record) {
       try {
         return accessor.invoke(record);
@@ -633,6 +690,7 @@ public final class JExpress {
         throw new UndeclaredThrowableException(cause);
       }
     }
+
     private static String toJSONObject(Record record) {
       return Arrays.stream(record.getClass().getRecordComponents())
           .map(c -> "\"" + c.getName() + "\": " + toJSONItem(accessor(c.getAccessor(), record)))
@@ -645,16 +703,18 @@ public final class JExpress {
     void accept(RequestImpl request, ResponseImpl response) throws IOException;
   }
 
-  private Pipeline pipeline = (request, response) -> {
-    var message = "no match " + request.method() + " " + request.path();
-    response.status(404).send("<html><h2>" + message + "</h2></html>");
-  };
+  private Pipeline pipeline =
+      (request, response) -> {
+        var message = "no match " + request.method() + " " + request.path();
+        response.status(404).send("<html><h2>" + message + "</h2></html>");
+      };
 
   /**
    * Routes an HTTP request if the HTTP method is GET.
+   *
    * @param path a string representation of a path with interpolation.
-   * @param callback a callback called when a client emits a
-   *        HTTP request to create an HTTP response.
+   * @param callback a callback called when a client emits a HTTP request to create an HTTP
+   *     response.
    */
   public void get(String path, Callback callback) {
     method("GET", path, callback);
@@ -662,9 +722,10 @@ public final class JExpress {
 
   /**
    * Routes an HTTP request if the HTTP method is POST.
+   *
    * @param path a string representation of a path with interpolation.
-   * @param callback a callback called when a client emits a
-   *        HTTP request to create an HTTP response.
+   * @param callback a callback called when a client emits a HTTP request to create an HTTP
+   *     response.
    */
   public void post(String path, Callback callback) {
     method("POST", path, callback);
@@ -672,9 +733,10 @@ public final class JExpress {
 
   /**
    * Routes an HTTP request if the HTTP method is PUT.
+   *
    * @param path a string representation of a path with interpolation.
-   * @param callback a callback called when a client emits a
-   *        HTTP request to create an HTTP response.
+   * @param callback a callback called when a client emits a HTTP request to create an HTTP
+   *     response.
    */
   public void put(String path, Callback callback) {
     method("PUT", path, callback);
@@ -682,27 +744,31 @@ public final class JExpress {
 
   /**
    * Routes an HTTP request if the HTTP method is DELETE.
+   *
    * @param path a string representation of a path with interpolation.
-   * @param callback a callback called when a client emits a
-   *        HTTP request to create an HTTP response.
+   * @param callback a callback called when a client emits a HTTP request to create an HTTP
+   *     response.
    */
   public void delete(String path, Callback callback) {
     method("DELETE", path, callback);
   }
 
   private void method(String method, String path, Callback callback) {
-    use(path, (request, response, chain) -> {
-      if (request.method().equalsIgnoreCase(method)) {
-        callback.accept(request, response);
-      } else {
-        chain.next();
-      }
-    });
+    use(
+        path,
+        (request, response, chain) -> {
+          if (request.method().equalsIgnoreCase(method)) {
+            callback.accept(request, response);
+          } else {
+            chain.next();
+          }
+        });
   }
 
   /**
-   * Register a handler that is always match the requested path.
-   * This method is semantically equivalent to
+   * Register a handler that is always match the requested path. This method is semantically
+   * equivalent to
+   *
    * <pre>
    *   use("/", handler);
    * </pre>
@@ -716,30 +782,33 @@ public final class JExpress {
 
   /**
    * Register a handler called when the request path matches the defined path
+   *
    * @param path the defined path that the request path must match
    * @param handler the handler called if the requested path matches
    */
   public void use(String path, Handler handler) {
     var oldPipeline = pipeline;
     var matcher = matcher(path);
-    pipeline = (request, response) -> {
-      var paramsOpt = matcher.apply(request.components);
-      if (paramsOpt.isPresent()) {
-        request.exchange.setAttribute("params", paramsOpt.orElseThrow());
-        handler.handle(request, response, () -> oldPipeline.accept(request, response));
-      } else {
-        oldPipeline.accept(request, response);
-      }
-    };
+    pipeline =
+        (request, response) -> {
+          var paramsOpt = matcher.apply(request.components);
+          if (paramsOpt.isPresent()) {
+            request.exchange.setAttribute("params", paramsOpt.orElseThrow());
+            handler.handle(request, response, () -> oldPipeline.accept(request, response));
+          } else {
+            oldPipeline.accept(request, response);
+          }
+        };
   }
 
   /**
-   * Serve static files from a root directory.
-   * This method is usually used in conjunction of {@link #use(String, Handler)}.
-   * For example,
+   * Serve static files from a root directory. This method is usually used in conjunction of {@link
+   * #use(String, Handler)}. For example,
+   *
    * <pre>
    *   app.use(staticFiles(Path.of("."));
    * </pre>
+   *
    * @param root the root directory
    * @return a handler that serves static files from the root directory
    */
@@ -752,6 +821,7 @@ public final class JExpress {
 
   /**
    * Starts a server on the given port and listen for connections.
+   *
    * @param port a TCP port
    * @return the server instance
    * @throws UncheckedIOException if an I/O error occurs when creating the server.
@@ -763,19 +833,22 @@ public final class JExpress {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-    server.createContext("/", exchange -> {
-      System.err.println("request " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-      try {
-        var components = exchange.getRequestURI().getPath().split("/");
-        exchange.setAttribute("status", 200);
-        pipeline.accept(new RequestImpl(exchange, components), new ResponseImpl(exchange));
-        //exchange.close();
-      } catch(Exception e) {
-        e.printStackTrace();
-        exchange.sendResponseHeaders(500, -1);
-        throw e;
-      }
-    });
+    server.createContext(
+        "/",
+        exchange -> {
+          System.err.println(
+              "request " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
+          try {
+            var components = exchange.getRequestURI().getPath().split("/");
+            exchange.setAttribute("status", 200);
+            pipeline.accept(new RequestImpl(exchange, components), new ResponseImpl(exchange));
+            // exchange.close();
+          } catch (Exception e) {
+            e.printStackTrace();
+            exchange.sendResponseHeaders(500, -1);
+            throw e;
+          }
+        });
     server.setExecutor(null);
     server.start();
     return () -> server.stop(1);

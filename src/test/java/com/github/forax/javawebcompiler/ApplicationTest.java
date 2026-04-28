@@ -1,13 +1,14 @@
 package com.github.forax.javawebcompiler;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 public final class ApplicationTest {
   @Test
   public void compileValidCode() {
-    var code = """
+    var code =
+        """
       public class Main {
         public static void main(String[] args) {
           System.out.println("Hello");
@@ -19,8 +20,9 @@ public final class ApplicationTest {
   }
 
   @Test
- public void diagnosticContainsLineAndColumn() {
-    var source = """
+  public void diagnosticContainsLineAndColumn() {
+    var source =
+        """
         public class Main {
             public static void main(String[] args) {
                 int x = "ksdjfj";

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [master]
   pull_request:
-    branches: [main, master]
+    branches: [master]
 
 jobs:
   test:
@@ -17,6 +17,9 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
+
+      - name: Check code formatting
+        run: mvn spotless:check -q
 
       - name: Run tests
         run: mvn test -q

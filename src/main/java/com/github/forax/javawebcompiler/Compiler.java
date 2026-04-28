@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class Compiler {
+public final class Compiler {
   private Compiler(){
       throw new AssertionError("no instances");
   }

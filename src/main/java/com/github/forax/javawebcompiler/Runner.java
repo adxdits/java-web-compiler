@@ -5,7 +5,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Objects;
 
-public class Runner {
+public final class Runner {
   private Runner(){
       throw new AssertionError("no instances");
   }

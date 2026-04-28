@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class MemoryClassLoader extends ClassLoader {
-  final Map<String, byte[]> classes = new HashMap<>();
+public final class MemoryClassLoader extends ClassLoader {
+  private final HashMap<String, byte[]> classes = new HashMap<>();
 
   public void addClass(String name, byte[] bytes) {
     Objects.requireNonNull(name);

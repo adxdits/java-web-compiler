@@ -11,11 +11,25 @@ public class Application {
   record Diagnostic(long line, long column, String message) {}
 
   private record CompilerResult(boolean success, DiagnosticCollector<Object> diagnostics) {}
+  private record CompileRequest(String code) {
+    private CompileRequest {
+      Objects.requireNonNull(code);
+    }
+  }
+
+  private record SourceFile(String className, String sourceCode) {}
+
+  private static final Pattern CLASSNAME_PATTERN = Pattern.compile("class\\s+(\\w+)");
+
+  // Dynamic class name extraction
+  private static String classNameExtractor(String code) {
+    var m = CLASSNAME_PATTERN.matcher(code);
+    return m.find() ? m.group(1) : "Main";
+  }
 
   static void main(String[] args) {
     var app = JExpress.express();
 
-    // Serve the static frontend files from "public"
     app.use(JExpress.staticFiles(Path.of("public")));
 
     var objectMapper = new ObjectMapper();

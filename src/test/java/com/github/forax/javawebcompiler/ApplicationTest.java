@@ -51,7 +51,7 @@ public final class ApplicationTest {
       var loader = new MemoryClassLoader();
       var diagnostics = Compiler.compileInMemory("Main", code, loader);
       var result = Runner.runFromMemory("Main", loader, diagnostics);
-      assertEquals(new Runner.RunResult("Hello\n", List.of()), result);
+      assertEquals(new Runner.RunResult("Hello" + System.lineSeparator(), List.of()), result);
   }
 
     @Test
@@ -73,7 +73,7 @@ public final class ApplicationTest {
       var loader = new MemoryClassLoader();
       var diagnostics = Compiler.compileInMemory("Main", code, loader);
       var result = Runner.runFromMemory("Main", loader, diagnostics);
-      assertEquals(new Runner.RunResult("line1\nline2\n", List.of()), result);
+      assertEquals(new Runner.RunResult("line1" + System.lineSeparator() + "line2" + System.lineSeparator(), List.of()), result);
     }
 
     @Test
